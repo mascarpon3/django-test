@@ -12,3 +12,8 @@ class BusShift(models.Model):
     driver = models.ForeignKey(Driver, null=False, on_delete=models.CASCADE)
     bus = models.ForeignKey(Bus, null=False, on_delete=models.CASCADE)
     bus_stops = models.ManyToManyField(BusStop)
+
+    def save(self, *args, **kwargs):
+        if self.bus_stops.count() < 2:
+            raise ValueError("a bus_shift must have at least two stops")
+        super(BusShift, self).save(*args, **kwargs)

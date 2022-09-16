@@ -19,7 +19,7 @@ class NetworkTestCse(TestCase):
         create_stops()
         create_bus_shift()
 
-    def test_add_bus_shift(self):
+    def test_bus_shift_has_at_least_two_stops(self):
         assert False
 
 
