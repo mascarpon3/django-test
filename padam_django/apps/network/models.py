@@ -1,6 +1,7 @@
 from django.db import models
 from padam_django.apps.geography.models import Place
 from padam_django.apps.fleet.models import Bus, Driver
+from django.db.models import Max, Min
 
 
 class BusStop(models.Model):
@@ -12,8 +13,14 @@ class BusShift(models.Model):
     driver = models.ForeignKey(Driver, null=False, on_delete=models.CASCADE)
     bus = models.ForeignKey(Bus, null=False, on_delete=models.CASCADE)
     bus_stops = models.ManyToManyField(BusStop)
+    start_time = models.TimeField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        if self.bus_stops.count() < 2:
-            raise ValueError("a bus_shift must have at least two stops")
+        if self.id:
+            if self.bus_stops:
+                self.start_time = self.bus_stops.values("pick_up_time").aggregate(Min('pick_up_time'))['pick_up_time__min']
+                self.end_time = self.bus_stops.values("pick_up_time").aggregate(Max('pick_up_time'))['pick_up_time__max']
+                self.delete()
+
         super(BusShift, self).save(*args, **kwargs)

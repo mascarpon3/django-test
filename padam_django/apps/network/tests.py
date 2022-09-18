@@ -19,13 +19,37 @@ class NetworkTestCse(TestCase):
         create_stops()
         create_bus_shift()
 
-    def test_bus_shift_has_at_least_two_stops(self):
-        assert False
+    def test_end_time_computation(self):
+        bus_stops = BusStop.objects.all()
+        buss = Bus.objects.all()
+        drivers = Driver.objects.all()
+        bus_shift = BusShift.objects.all()
+
+        bus_shift = BusShift(bus=buss[0], driver=drivers[1])
+        bus_shift.save()
+        bus_shift.bus_stops.add(bus_stops[0], bus_stops[1], bus_stops[2])
+        bus_shift.save()
+
+        assert bus_shift.start_time == min(
+            bus_stops[0].pick_up_time,
+            bus_stops[1].pick_up_time,
+            bus_stops[2].pick_up_time
+        )
+        assert bus_shift.end_time == max(
+            bus_stops[0].pick_up_time,
+            bus_stops[1].pick_up_time,
+            bus_stops[2].pick_up_time
+        )
+
 
 
 def create_stops():
     for place in Place.objects.all():
         BusStop(place=place, pick_up_time=_random_time()).save()
+
+
+def _random_time():
+    return datetime.time(randrange(0, 24), randrange(0, 60),)
 
 
 def create_bus_shift():
@@ -34,21 +58,18 @@ def create_bus_shift():
     drivers = Driver.objects.all()
 
     bus_shift = BusShift.objects.create(bus=buss[0], driver=drivers[0])
+    bus_shift.save()
     bus_shift.bus_stops.add(bus_stops[0], bus_stops[1], bus_stops[2])
     bus_shift.save()
-
-    bus_shift = BusShift.objects.create(bus=buss[1], driver=drivers[1])
-    bus_shift.bus_stops.add(bus_stops[3], bus_stops[4], bus_stops[5])
-    bus_shift.save()
-
-    bus_shift = BusShift.objects.create(bus=buss[2], driver=drivers[2])
-    bus_shift.bus_stops.add(bus_stops[6], bus_stops[7], bus_stops[8])
-    bus_shift.save()
-
-    bus_shift = BusShift.objects.create(bus=buss[3], driver=drivers[3])
-    bus_shift.bus_stops.add(bus_stops[6], bus_stops[7], bus_stops[8], bus_stops[9])
-    bus_shift.save()
-
-
-def _random_time():
-    return datetime.time(randrange(0, 24), randrange(0, 60),)
+    #
+    # bus_shift = BusShift.objects.create(bus=buss[1], driver=drivers[1])
+    # bus_shift.bus_stops.add(bus_stops[3], bus_stops[4], bus_stops[5])
+    # bus_shift.save()
+    #
+    # bus_shift = BusShift.objects.create(bus=buss[2], driver=drivers[2])
+    # bus_shift.bus_stops.add(bus_stops[6], bus_stops[7], bus_stops[8])
+    # bus_shift.save()
+    #
+    # bus_shift = BusShift.objects.create(bus=buss[3], driver=drivers[3])
+    # bus_shift.bus_stops.add(bus_stops[6], bus_stops[7], bus_stops[8], bus_stops[9])
+    # bus_shift.save()
