@@ -16,60 +16,64 @@ class NetworkTestCse(TestCase):
         management.call_command('create_drivers', number=5)
         management.call_command('create_buses', number=10)
         management.call_command('create_places', number=30)
-        create_stops()
-        create_bus_shift()
+        self.places = Place.objects.all()
+        self.buss = Bus.objects.all()
+        self.drivers = Driver.objects.all()
+
+        self.create_bus_stops()
+        self.bus_stops = BusStop.objects.all()
+
+        self.create_bus_shifts()
+        self.bus_shifts = BusShift.objects.all()
 
     @staticmethod
-    def test_start_and_end_time_computation():
+    def test_cant_add_same_bus_on_two_shifts():
         bus_stops = BusStop.objects.all()
         buss = Bus.objects.all()
         drivers = Driver.objects.all()
-        bus_shift = BusShift.objects.all()
+        bus_shifts = BusShift.objects.all()
 
-        bus_shift = BusShift(bus=buss[0], driver=drivers[1])
-        bus_shift.save()
-        bus_shift.bus_stops.add(bus_stops[0], bus_stops[1], bus_stops[2])
-        bus_shift.save()
+        bus_shift = BusShift.objects.create(
+            bus=buss[0],
+            driver=drivers[0],
+            bus_stops=(bus_stops[0], bus_stops[1])
+        )
+        assert True
+
+    def test_start_and_end_time_computation(self):
+        bus_shift = BusShift.objects.create(
+            bus=self.buss[2],
+            driver=self.drivers[2],
+            bus_stops=(self.bus_stops[0], self.bus_stops[1], self.bus_stops[2])
+        )
 
         assert bus_shift.start_time == min(
-            bus_stops[0].pick_up_time,
-            bus_stops[1].pick_up_time,
-            bus_stops[2].pick_up_time
+            self.bus_stops[0].pick_up_time,
+            self.bus_stops[1].pick_up_time,
+            self.bus_stops[2].pick_up_time
         )
         assert bus_shift.end_time == max(
-            bus_stops[0].pick_up_time,
-            bus_stops[1].pick_up_time,
-            bus_stops[2].pick_up_time
+            self.bus_stops[0].pick_up_time,
+            self.bus_stops[1].pick_up_time,
+            self.bus_stops[2].pick_up_time
+        )
+
+    def create_bus_stops(self):
+        for place in self.places:
+            BusStop(place=place, pick_up_time=_get_random_time()).save()
+
+    def create_bus_shifts(self):
+        BusShift.objects.create(
+            bus=self.buss[0],
+            driver=self.drivers[0],
+            bus_stops=(self.bus_stops[0], self.bus_stops[1], self.bus_stops[2]),
+        )
+        BusShift.objects.create(
+            bus=self.buss[1],
+            driver=self.drivers[1],
+            bus_stops=(self.bus_stops[4], self.bus_stops[5], self.bus_stops[6])
         )
 
 
-def create_stops():
-    for place in Place.objects.all():
-        BusStop(place=place, pick_up_time=_random_time()).save()
-
-
-def _random_time():
+def _get_random_time():
     return datetime.time(randrange(0, 24), randrange(0, 60),)
-
-
-def create_bus_shift():
-    bus_stops = BusStop.objects.all()
-    buss = Bus.objects.all()
-    drivers = Driver.objects.all()
-
-    bus_shift = BusShift.objects.create(bus=buss[0], driver=drivers[0])
-    bus_shift.save()
-    bus_shift.bus_stops.add(bus_stops[0], bus_stops[1], bus_stops[2])
-    bus_shift.save()
-    #
-    # bus_shift = BusShift.objects.create(bus=buss[1], driver=drivers[1])
-    # bus_shift.bus_stops.add(bus_stops[3], bus_stops[4], bus_stops[5])
-    # bus_shift.save()
-    #
-    # bus_shift = BusShift.objects.create(bus=buss[2], driver=drivers[2])
-    # bus_shift.bus_stops.add(bus_stops[6], bus_stops[7], bus_stops[8])
-    # bus_shift.save()
-    #
-    # bus_shift = BusShift.objects.create(bus=buss[3], driver=drivers[3])
-    # bus_shift.bus_stops.add(bus_stops[6], bus_stops[7], bus_stops[8], bus_stops[9])
-    # bus_shift.save()
