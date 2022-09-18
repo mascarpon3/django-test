@@ -19,7 +19,8 @@ class NetworkTestCse(TestCase):
         create_stops()
         create_bus_shift()
 
-    def test_end_time_computation(self):
+    @staticmethod
+    def test_start_and_end_time_computation():
         bus_stops = BusStop.objects.all()
         buss = Bus.objects.all()
         drivers = Driver.objects.all()
@@ -40,7 +41,6 @@ class NetworkTestCse(TestCase):
             bus_stops[1].pick_up_time,
             bus_stops[2].pick_up_time
         )
-
 
 
 def create_stops():
