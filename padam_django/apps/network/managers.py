@@ -17,6 +17,6 @@ class BusShiftManager(models.Manager):
     def create_bus_shift(self, bus, driver, bus_stops):
         bus_shift = self.get_query_set().create(bus=bus, driver=driver)
         bus_shift.save()
-        bus_shift.bus_stops.add(bus_stops)
+        bus_shift.bus_stops.add(*bus_stops)
         bus_shift.save()
         return bus_shift
