@@ -1,4 +1,5 @@
 from django.contrib import admin
+from padam_django.apps.network.forms import BusShiftForm
 
 from . import models
 
@@ -10,4 +11,4 @@ class BusStopAdmin(admin.ModelAdmin):
 
 @admin.register(models.BusShift)
 class BusShiftAdmin(admin.ModelAdmin):
-    pass
+    form = BusShiftForm
